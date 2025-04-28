@@ -1,0 +1,52 @@
+# black_hole_simulation.py
+# Simulates black hole mass, distance, spin, and computes Schwarzschild and Kerr time dilation
+
+import numpy as np
+import pandas as pd
+
+# Physical constants
+G = 6.67430e-11  # Gravitational constant (m³/kg/s²)
+c = 299792458    # Speed of light (m/s)
+solar_mass = 1.98847e30  # Solar mass in kilograms
+
+# Functions for time dilation
+def schwarzschild_radius(M):
+    return (2 * G * M) / (c**2)
+
+def schwarzschild_time_dilation(M, r):
+    return np.sqrt(1 - (2 * G * M) / (r * c**2))
+
+def kerr_time_dilation(M, a, r):
+    rs = schwarzschild_radius(M)
+    numerator = r**2 - rs * r + a**2
+    denominator = r**2 + a**2
+    return np.sqrt(numerator / denominator)
+
+def random_distance(M):
+    rs = schwarzschild_radius(M)
+    return np.random.uniform(1.5 * rs, 1000 * rs)
+
+# Generate synthetic dataset
+def generate_black_hole_data(num_samples=1000, seed=42):
+    np.random.seed(seed)
+    mass_range = np.random.uniform(5 * solar_mass, 100 * solar_mass, num_samples)
+    distance_range = np.array([random_distance(m) for m in mass_range])
+    spin_range = np.random.uniform(0, 0.998, num_samples)
+
+    schwarzschild_dilation = schwarzschild_time_dilation(mass_range, distance_range)
+    kerr_dilation = kerr_time_dilation(mass_range, spin_range * (G * mass_range / c), distance_range)
+
+    data = pd.DataFrame({
+        'Mass_kg': mass_range,
+        'Distance_m': distance_range,
+        'Spin': spin_range,
+        'Schwarzschild_TimeDilation': schwarzschild_dilation,
+        'Kerr_TimeDilation': kerr_dilation
+    })
+    return data
+
+if __name__ == "__main__":
+    # Generate and save the dataset
+    data = generate_black_hole_data(num_samples=1000)
+    data.to_csv('Black_Hole_Time_Dilation_Data.csv', index=False)
+    print("Dataset generated and saved as Black_Hole_Time_Dilation_Data.csv")
